@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script src="https://cdn.socket.io/4.3.1/socket.io.min.js"></script>
+
+<script>
+var _sock = null;
+var _ramal = window.localStorage.getItem("RAMAL_FISICO");
+
+async function connectToListener() {
+
+    if (_sock == null) {
+        _sock =  new WebSocket("wss://faint-straw-production.up.railway.app");
+    }
+
+    console.log(_sock)
+
+    if (_sock.readyState == WebSocket.OPEN) {
+        _sock.close();
+        return;
+    }
+
+    _sock.onmessage = async function (evt) {
+        var receivedMessage = evt.data;
+        console.log("Message received from CTI: " + receivedMessage);
+
+        const obj = JSON.parse(receivedMessage);
+
+        // if (obj.ramalFisico == _ramal){ 
+            //TODO
+        //if (obj.ramalFisico == _ramalTemporario) {
+
+            if (obj.phone != null && obj.phone != "") {
+
+                allowPopup = true;
+
+                var document = obj.document != null ? obj.document : "";
+                // data = await searchContactByPhoneAndDocument(obj.phone, document).then((data) => {
+
+                    // console.log("Contact search result: ", data);
+
+                    if (data.count == 1) {
+                        //Open the new ticket for the found customer
+                        console.log(data.rows);
+                        // createWorkspaceRecordIncident(data.rows[0][0], obj.uraId);
+
+                    } else if (data.count > 1) {
+                        //Open report with the same filters used in the search
+                        console.log(data.rows);
+                        // openReportContactByPhoneAndDocument(obj.phone, document)
+                        window.localStorage.setItem("UraId", obj.uraId);
+                    } else {
+                        //Create new Contact with the data received from URA
+                        console.log("No records found.");
+                        // createWorkspaceRecordContact(obj.phone, document);
+                        window.localStorage.setItem("UraId", obj.uraId);
+
+                        //Open report with the same filters used in the search
+                        // openReportContactByPhoneAndDocument(obj.phone, document)
+                    }
+
+                // });
+            }
+        // }
+
+    }
+}
+connectToListener()
+</script>
+</html>
